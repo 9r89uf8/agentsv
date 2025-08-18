@@ -1,0 +1,17 @@
+# Undetected ChromeDriver Requirements
+# Core dependencies for web automation with bot detection avoidance
+
+# Main undetected chromedriver package
+undetected-chromedriver>=3.5.0
+
+# Selenium for web automation
+selenium>=4.21
+webdriver-manager>=4.0.2
+
+# Additional useful packages for web scraping
+requests>=2.25.0
+beautifulsoup4>=4.9.0
+lxml>=4.6.0
+
+# For better error handling and logging
+urllib3>=1.26.0

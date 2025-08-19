@@ -1,3 +1,4 @@
+python-dotenv
 # Undetected ChromeDriver Requirements
 # Core dependencies for web automation with bot detection avoidance
 

@@ -38,11 +38,17 @@ def find_more_results_control(driver, timeout=4.0):
         WebElement if found, None otherwise
     """
     locators = [
+        # English selectors
         (By.XPATH, "//*[@aria-label='More results']"),
         (By.XPATH, "//*[self::a or self::button or @role='button'][.//span[normalize-space()='More results'] or contains(normalize-space(.),'More results')]"),
         (By.XPATH, "//div[@role='button' and .//span[contains(.,'More results')]]"),
-        # fallback: anything with role=button near the bottom area
-        (By.XPATH, "//*[@role='button' and contains(.,'More') and contains(.,'result')]"),
+        # Spanish selectors for Google Mexico
+        (By.XPATH, "//*[@aria-label='Más resultados']"),
+        (By.XPATH, "//*[@aria-label='más resultados']"),
+        (By.XPATH, "//*[self::a or self::button or @role='button'][.//span[contains(translate(normalize-space(.), 'MÁSRESULTADOSBÚQUEDA', 'másresultadosbúsqueda'), 'más resultado')] or contains(translate(normalize-space(.), 'MÁSRESULTADOSBÚQUEDA', 'másresultadosbúsqueda'), 'más resultado')]"),
+        (By.XPATH, "//div[@role='button' and .//span[contains(translate(., 'MÁSRESULTADOSBÚQUEDA', 'másresultadosbúsqueda'), 'más resultado')]]"),
+        # Generic fallback for both languages
+        (By.XPATH, "//*[@role='button' and (contains(.,'More') and contains(.,'result')) or (contains(translate(., 'MÁS', 'más'), 'más') and contains(translate(., 'RESULTADO', 'resultado'), 'resultado'))]"),
     ]
     end = time.time() + timeout
     while time.time() < end:

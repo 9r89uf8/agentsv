@@ -37,13 +37,11 @@ class SimpleSearchStrategy:
             # 70% discovery searches - Spanish keywords for AI girlfriend chat
             discovery_queries = [
                 "novia virtual gratis",
-                "novia virtual IA",
+                "novia virtual app",
+                "novia virtual chat",
                 "chicas virtuales",
                 "novia IA gratis",
-                "novia virtual México",
-                "chat con IA chicas",
-                "hablar con novia virtual",
-                "chat novia virtual gratis"
+                "novia virtual en español"
             ]
             query = random.choice(discovery_queries)
             log(f"Búsqueda de descubrimiento #{self.search_count}: {query}")

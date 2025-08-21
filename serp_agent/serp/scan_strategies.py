@@ -2,6 +2,7 @@
 SERP scanning and pagination strategies
 """
 import time
+import random
 from typing import Optional, Set
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -10,8 +11,40 @@ from selenium.common.exceptions import WebDriverException
 from ..net.url_utils import extract_final_url, url_matches_domain
 from ..browser.actions import click_safely, robust_tap, find_more_results_control
 from ..browser.diagnostics import dump_serp_snapshot
-from ..config.constants import NEXT_PAGE_SELECTORS
+from ..config.constants import NEXT_PAGE_SELECTORS, DEFAULT_SCROLL_STEP_PX
 from ..logging.logger import log
+
+
+def get_human_scroll_distance(is_mobile: bool = False) -> int:
+    """
+    Generate human-like variable scroll distances.
+    
+    Args:
+        is_mobile: Whether this is a mobile device (uses smaller distances)
+    
+    Returns:
+        Random scroll distance in pixels
+    """
+    if is_mobile:
+        # Mobile: smaller scroll distances
+        patterns = [
+            random.randint(150, 300),   # Small scroll - see 1-2 items
+            random.randint(300, 400),   # Medium scroll - see 2-3 items
+            random.randint(400, 500),   # Large scroll - quick skim
+            random.randint(100, 200),   # Micro adjustment
+        ]
+    else:
+        # Desktop: larger scroll distances
+        patterns = [
+            random.randint(300, 500),   # Small scroll - see 2-3 items
+            random.randint(500, 750),   # Medium scroll - see 3-5 items
+            random.randint(750, 1000),  # Large scroll - quick skim
+            random.randint(150, 250),   # Micro adjustment
+        ]
+    
+    # Weighted distribution: 60% medium, 20% small, 15% large, 5% micro
+    weights = [0.2, 0.6, 0.15, 0.05]
+    return random.choices(patterns, weights=weights)[0]
 
 
 def progressive_scroll_and_scan(
@@ -19,7 +52,7 @@ def progressive_scroll_and_scan(
     target_domain: str,
     seen_hrefs: Optional[Set[str]] = None,
     max_steps: int = 10,
-    step_px: int = 700
+    step_px: int = DEFAULT_SCROLL_STEP_PX
 ) -> bool:
     """
     Scroll down the page in steps, scanning for matching anchors after each step.
@@ -39,8 +72,16 @@ def progressive_scroll_and_scan(
         seen_hrefs = set()
 
     last_height = driver.execute_script("return document.body.scrollHeight") or 0
+    
+    # Detect if mobile based on viewport width
+    try:
+        viewport_width = driver.execute_script("return window.innerWidth")
+        is_mobile = viewport_width < 768
+    except:
+        is_mobile = False
 
     for i in range(max_steps):
+        # Scan BEFORE scroll
         anchors = driver.find_elements(By.XPATH, "//div[@id='search']//a[@href] | //div[@id='rso']//a[@href]")
         for a in anchors:
             try:
@@ -56,8 +97,36 @@ def progressive_scroll_and_scan(
             except WebDriverException:
                 continue
 
-        driver.execute_script("window.scrollBy(0, arguments[0]);", step_px)
-        time.sleep(0.6 + (0.4 * (i % 3)))  # staggered delay
+        # Use variable human-like scroll distance
+        scroll_distance = get_human_scroll_distance(is_mobile)
+        
+        # 5% chance to do a small back-scroll first (human double-checking behavior)
+        if i > 0 and random.random() < 0.05:
+            back_scroll = random.randint(50, 150)
+            driver.execute_script("window.scrollBy(0, arguments[0]);", -back_scroll)
+            time.sleep(random.uniform(0.3, 0.7))
+            log(f"Back-scrolled {back_scroll}px (human re-check)")
+        
+        # Main scroll with human-like variable distance
+        driver.execute_script("window.scrollBy(0, arguments[0]);", scroll_distance)
+        log(f"Scrolled {scroll_distance}px on step {i+1}")
+        time.sleep(1.5 + (0.5 * (i % 3)))  # increased delay: 1.5-2.5 seconds
+
+        # Scan AFTER scroll for newly loaded content
+        anchors = driver.find_elements(By.XPATH, "//div[@id='search']//a[@href] | //div[@id='rso']//a[@href]")
+        for a in anchors:
+            try:
+                href = a.get_attribute("href")
+                if not href or href in seen_hrefs:
+                    continue
+                seen_hrefs.add(href)
+                final_url = extract_final_url(href)
+                if url_matches_domain(final_url, target_domain):
+                    log(f"Found target after scroll on step {i+1}: {final_url}")
+                    click_safely(driver, a)
+                    return True
+            except WebDriverException:
+                continue
 
         try:
             new_height = driver.execute_script("return document.body.scrollHeight") or last_height

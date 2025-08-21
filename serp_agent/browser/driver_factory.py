@@ -63,7 +63,7 @@ def build_driver(
     driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
         'source': '''
             Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-            Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+            Object.defineProperty(navigator, 'languages', { get: () => ['es-ES', 'es-MX', 'es'] });
             Object.defineProperty(navigator, 'plugins', { get: () => [1,2,3,4,5] });
             window.chrome = { runtime: {} };
         '''
@@ -88,7 +88,7 @@ def build_driver(
             driver.execute_cdp_cmd("Emulation.setUserAgentOverride", {
                 "userAgent": MOBILE_USER_AGENT,
                 "platform": "Android",
-                "acceptLanguage": "en-US,en"
+                "acceptLanguage": "es-ES,es-MX,es"
             })
             log("Mobile emulation enabled and window sized to Pixel 5.")
         except Exception as e:

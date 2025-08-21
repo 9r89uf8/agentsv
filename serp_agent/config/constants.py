@@ -42,23 +42,29 @@ CHROME_ARGS = [
     "--disable-blink-features=AutomationControlled",
     "--no-sandbox",
     "--disable-dev-shm-usage",
-    "--lang=en-US,en",
+    "--lang=es-ES,es",
     "--force-device-scale-factor=1",
 ]
 
-# Cookie consent selectors
+# Cookie consent selectors (includes Spanish)
 COOKIE_CONSENT_SELECTORS = [
     "//button//*[contains(text(),'Accept')]/ancestor::button",
     "//button[contains(., 'Accept')]",
     "//button[contains(., 'I agree')]",
-    "//div[contains(@role,'button') and (contains(.,'Accept') or contains(.,'I agree'))]"
+    "//button[contains(., 'Aceptar')]",
+    "//button[contains(., 'Aceptar todo')]",
+    "//button[contains(., 'Aceptar todas')]",
+    "//div[contains(@role,'button') and (contains(.,'Accept') or contains(.,'I agree') or contains(.,'Aceptar'))]"
 ]
 
 IFRAME_CONSENT_SELECTORS = [
     "//button//*[contains(text(),'Accept')]/ancestor::button",
     "//button[contains(., 'Accept all')]",
     "//button[contains(., 'I agree')]",
+    "//button[contains(., 'Aceptar todo')]",
+    "//button[contains(., 'Aceptar todas')]",
     "//button[@aria-label='Accept all']",
+    "//button[@aria-label='Aceptar todo']",
 ]
 
 # More results control selectors (mobile)
@@ -92,6 +98,6 @@ HISTORY_FILES = [
     "Network Action Predictor",
 ]
 
-# Search engine URLs
-GOOGLE_URL = "https://www.google.com/ncr"
-BING_URL = "https://www.bing.com/?setlang=en"
+# Search engine URLs (Spanish)
+GOOGLE_URL = "https://www.google.com.mx"  # Mexico Google for Spanish searches
+BING_URL = "https://www.bing.com/?setlang=es"

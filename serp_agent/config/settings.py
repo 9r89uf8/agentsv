@@ -56,6 +56,17 @@ class PathsConfig:
     temp_dir: Optional[str] = None
 
 
+@dataclass  
+class SEOConfig:
+    """Simple SEO enhancement settings"""
+    brand_name: str = "Your Brand"
+    base_topic: str = "your product"
+    min_dwell_time: int = 120  # 2 minutes
+    max_dwell_time: int = 180  # 3 minutes
+    brand_search_ratio: float = 0.3  # 30% brand searches
+    searches_per_session: int = 10
+
+
 @dataclass
 class Settings:
     """Complete configuration settings"""
@@ -63,6 +74,7 @@ class Settings:
     proxy: ProxyConfig
     search: SearchConfig
     paths: PathsConfig
+    seo: Optional[SEOConfig] = None
     
     @classmethod
     def from_env(cls) -> "Settings":
@@ -124,9 +136,23 @@ class Settings:
             history_wipe_enabled=bool(user_data_dir)
         )
         
+        # SEO configuration (optional)
+        seo_config = None
+        brand_name = os.getenv("BRAND_NAME")
+        if brand_name:  # Only create SEO config if brand name is provided
+            seo_config = SEOConfig(
+                brand_name=brand_name,
+                base_topic=os.getenv("BASE_TOPIC", "your product"),
+                min_dwell_time=int(os.getenv("MIN_DWELL_TIME", "120")),
+                max_dwell_time=int(os.getenv("MAX_DWELL_TIME", "180")),
+                brand_search_ratio=float(os.getenv("BRAND_SEARCH_RATIO", "0.3")),
+                searches_per_session=int(os.getenv("SEARCHES_PER_SESSION", "10"))
+            )
+        
         return cls(
             browser=browser_config,
             proxy=proxy_config,
             search=search_config,
-            paths=paths_config
+            paths=paths_config,
+            seo=seo_config
         )
